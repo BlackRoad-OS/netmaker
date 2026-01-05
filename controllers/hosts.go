@@ -769,15 +769,30 @@ func delEmqxHosts(w http.ResponseWriter, r *http.Request) {
 		logic.ReturnErrorResponse(w, r, logic.FormatError(err, "internal"))
 		return
 	}
+	var hadError bool
+	var firstErr error
 	for _, host := range currentHosts {
 		// delete EMQX credentials for host
 		if err := mq.GetEmqxHandler().DeleteEmqxUser(host.ID.String()); err != nil {
 			slog.Error("failed to remove host credentials from EMQX", "id", host.ID, "error", err)
+			hadError = true
+			if firstErr == nil {
+				firstErr = err
+			}
 		}
 	}
 	err = mq.GetEmqxHandler().DeleteEmqxUser(servercfg.GetMqUserName())
 	if err != nil {
 		slog.Error("failed to remove server credentials from EMQX", "user", servercfg.GetMqUserName(), "error", err)
+		hadError = true
+		if firstErr == nil {
+			firstErr = err
+		}
+	}
+	if hadError {
+		// at least one delete operation failed; surface this to the caller
+		logic.ReturnErrorResponse(w, r, logic.FormatError(firstErr, "internal"))
+		return
 	}
 	logic.ReturnSuccessResponse(w, r, "deleted hosts data on emqx")
 }
