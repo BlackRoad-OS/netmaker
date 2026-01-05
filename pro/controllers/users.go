@@ -879,7 +879,7 @@ func getUserRemoteAccessGwsV1(w http.ResponseWriter, r *http.Request) {
 			}
 
 			gws := userGws[node.Network]
-			if net.ParseIP(extClient.IngressGatewayEndpoint).To16() != nil {
+			if ip := net.ParseIP(extClient.IngressGatewayEndpoint); ip != nil && ip.To4() == nil {
 				extClient.IngressGatewayEndpoint = fmt.Sprintf("[%s]", extClient.IngressGatewayEndpoint)
 			}
 			extClient.AllowedIPs = logic.GetExtclientAllowedIPs(extClient)
