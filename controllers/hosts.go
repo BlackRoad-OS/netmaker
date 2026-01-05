@@ -753,7 +753,7 @@ func syncHost(w http.ResponseWriter, r *http.Request) {
 
 // swagger:route DELETE /api/emqx/hosts hosts delEmqxHosts
 //
-// Lists all hosts.
+// Deletes EMQX user credentials for all hosts and the server.
 //
 //			Schemes: https
 //
